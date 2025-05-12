@@ -1,0 +1,28 @@
+[project]
+name = "xml-aws-athena"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Marcus Holanda",email = "mvsh777@hotmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "athena-mvsh (>=0.0.21,<0.0.22)",
+    "pyodbc (>=5.2.0,<6.0.0)",
+    "lxml (>=5.4.0,<6.0.0)",
+    "deltalake (>=0.25.5,<0.26.0)",
+    "python-dotenv (>=1.1.0,<2.0.0)"
+]
+
+[tool.poetry]
+packages = [{include = "xml_aws_athena", from = "src"}]
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
+ipython = "^9.2.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
