@@ -2,4 +2,4 @@
 *.db
 *.duckdb
 main.py
-tests
+__pycache__/

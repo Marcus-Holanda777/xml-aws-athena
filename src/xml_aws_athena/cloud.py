@@ -5,8 +5,9 @@ from io import BytesIO
 
 
 class Storage:
-    def __init__(self) -> None:
-        self.s3_client = boto3.client("s3")
+    def __init__(self, **kwargs) -> None:
+        self.kwargs = kwargs
+        self.s3_client = boto3.client("s3", **kwargs)
 
     def create_bucket(self, bucket_name: str, region: str = None) -> bool:
         """
@@ -14,14 +15,13 @@ class Storage:
         If a region is not specified, the bucket will be created in the default region.
         """
         try:
-            if region is None:
-                self.s3_client.create_bucket(Bucket=bucket_name)
-            else:
-                self.s3_client = boto3.client("s3", region_name=region)
+            if region := self.kwargs.get("region_name", None):
                 location = {"LocationConstraint": region}
                 self.s3_client.create_bucket(
                     Bucket=bucket_name, CreateBucketConfiguration=location
                 )
+            else:
+                self.s3_client.create_bucket(Bucket=bucket_name)
             return True
         except ClientError as e:
             logging.error(f"Error creating bucket: {e}")
