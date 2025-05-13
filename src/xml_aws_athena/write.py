@@ -66,6 +66,8 @@ def delta_optimize_aws() -> list[str]:
 
     rst = dt.vacuum(retention_hours=0, enforce_retention_duration=False, dry_run=False)
     dt.create_checkpoint()
+    dt.cleanup_metadata()
+
     return rst
 
 

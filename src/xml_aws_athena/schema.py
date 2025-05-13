@@ -1,6 +1,6 @@
 import pyarrow as pa
 
-schema_nota = pa.schema(  
+schema_nota = pa.schema(
     [
         pa.field("controle", pa.string()),
         pa.field("status", pa.int8()),
