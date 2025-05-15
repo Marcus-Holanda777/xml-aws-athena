@@ -13,6 +13,10 @@ def comand_gold(data: pa.Table) -> None:
         data (pa.Table): Data to write.
     """
 
+    rows, __ = data.shape
+    if rows == 0:
+        raise ValueError("Tabela vazia, não é possível escrever no Athena")
+
     cursor = CursorParquetDuckdb(config.get("s3_staging_dir"), result_reuse_enable=True)
 
     table_name = "notas_xml"

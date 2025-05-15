@@ -30,11 +30,28 @@ def write_parquet_file(data: tuple, tmpdirname: str) -> tuple:
     return pos, file_path
 
 
-def write_parquet_temp(rst: list[tuple]) -> pa.Table:
+def write_parquet_buffer(data: tuple) -> pa.BufferOutputStream:
+    """
+    Write XML data to a Parquet buffer.
+    Args:
+        data (tuple): Tuple containing position and data.
+    Returns:
+        pa.BufferOutputStream: Buffer containing the Parquet data.
+    """
+    __, (xml, __, instatus, __, controle) = data
+    file = ParseXml(controle, instatus, xml)
+
+    buffer = pa.BufferOutputStream()
+    pq.write_table(file.arrow(), buffer, compression="zstd")
+
+    return buffer
+
+
+def read_parquet_temp(rst: list[tuple]) -> pa.Table:
     logger.info("Escrevendo arquivos temporários em parquet...")
     with tempfile.TemporaryDirectory(prefix="xml_mssql") as tmpdirname:
         with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
-            rst = executor.map(partial(write_parquet_file, tmpdirname=tmpdirname), rst)
+            __ = executor.map(partial(write_parquet_file, tmpdirname=tmpdirname), rst)
 
         tbl_full = pq.ParquetDataset(tmpdirname, schema=schema_nota)
         tbl_full = tbl_full.read(use_threads=True)
@@ -50,7 +67,7 @@ def command_silver(start: datetime, end: datetime, rst: list[tuple]):
     total = 0
 
     while lotes := list(islice(iterar, 1_000)):
-        tbl_full = write_parquet_temp(lotes)
+        tbl_full = read_parquet_temp(lotes)
         total += len(lotes)
 
         if not Write.is_delta_table():

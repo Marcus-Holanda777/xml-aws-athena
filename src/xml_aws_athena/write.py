@@ -4,6 +4,10 @@ import pyarrow as pa
 import duckdb
 import os
 from datetime import datetime
+from time import sleep
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 region_name = config.get("region_name")
@@ -43,18 +47,23 @@ def merge_deltalake_aws(data: pa.Table) -> None:
     """
     Merge a Delta Lake table.
     """
-    dt = DeltaTable(table_path, storage_options=storage_options)
-    rst = (
-        dt.merge(
-            data,
-            predicate="s.chave = t.chave and s.item = t.item",
-            source_alias="s",
-            target_alias="t",
+    try:
+        dt = DeltaTable(table_path, storage_options=storage_options)
+        rst = (
+            dt.merge(
+                data,
+                predicate="s.chave = t.chave and s.item = t.item",
+                source_alias="s",
+                target_alias="t",
+            )
+            .when_not_matched_insert_all()
+            .when_matched_update_all()
+            .execute()
         )
-        .when_not_matched_insert_all()
-        .when_matched_update_all()
-        .execute()
-    )
+    except Exception:
+        logger.info("Erro ao fazer merge, tentando novamente em 5 segundos ...")
+        sleep(5.0)
+        merge_deltalake_aws(data)
 
     return rst
 
